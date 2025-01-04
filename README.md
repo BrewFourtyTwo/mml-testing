@@ -36,7 +36,7 @@ default.
 To add a new example, simply create a new HTML file, such as `new-example.html` inside the
 `examples` directory. The server will automatically detect it and make it available at
 `ws://localhost:8080/examples/new-example.html`. You can then copy this WebSocket URL and add it to
-a free slot.
+a free slot.   
 
 ## Run on CodeSandbox
 
