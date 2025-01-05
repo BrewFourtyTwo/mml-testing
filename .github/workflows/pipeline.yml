@@ -37,6 +37,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: create env file
+        run: |
+          echo "GIT_COMMIT_HASH=${{ github.sha }}" > ./envfile
       - name: Docker Stack Deploy
         uses: cssnr/stack-deploy-action@v1
         with:
@@ -45,3 +48,4 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           user: ${{ secrets.SSH_USER }}
           ssh_key: ${{ secrets.SSH_KEY }}
+          env_file: ./envfile
