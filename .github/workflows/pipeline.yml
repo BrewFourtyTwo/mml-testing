@@ -23,5 +23,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/BrewFourtyTwo/mml:latest
-            ghcr.io/BrewFourtyTwo/mml:${{ github.sha }}
+            ghcr.io/brewfourtytwo/mml:latest
+            ghcr.io/brewfourtytwo/mml:${{ github.sha }}
