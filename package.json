@@ -10,7 +10,8 @@
     "iterate": "npm run build && lerna run --parallel --stream iterate",
     "type-check-all": "lerna run --stream type-check",
     "lint-all": "lerna run --stream lint",
-    "lint-fix-all": "lerna run --stream lint:fix"
+    "lint-fix-all": "lerna run --stream lint:fix",
+    "install:packages": "(cd packages/server && npm install); (cd packages/web-client && npm install); (cd packages/playground && npm install)"
   },
   "workspaces": [
     "packages/*"
