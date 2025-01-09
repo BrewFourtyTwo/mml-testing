@@ -1,0 +1,131 @@
+<m-group
+  id="chartContainer"
+  x="0" y="0" z="4"
+  ry="90"
+>
+  <!-- We will dynamically insert <m-cube> elements here via JavaScript -->
+</m-group>
+
+<script>
+// Example data array (time + price):
+const chartData = [
+  { time: "18:30", price: 246.20 },
+  { time: "18:35", price: 246.12 },
+  { time: "18:40", price: 245.95 },
+  { time: "18:45", price: 245.88 },
+  { time: "18:50", price: 246.09 },
+  { time: "18:55", price: 246.50 },
+  { time: "19:00", price: 246.28 },
+  { time: "19:05", price: 246.15 },
+  { time: "19:10", price: 246.20 },
+  { time: "19:15", price: 245.90 },
+];
+
+/**
+ * Utility: parse "hh:mm" to a numeric minute-of-day (e.g. "18:30" -> 1110)
+ */
+function parseTimeToMinutes(tStr) {
+  const [hh, mm] = tStr.split(":").map(Number);
+  return hh * 60 + mm;
+}
+
+/**
+ * Draws a 3D bar chart using <m-cube> for each data point.
+ * 
+ * @param {Array} data - array of { time: string, price: number }
+ * @param {string} containerId - ID of <m-group> or other container
+ */
+function draw3DBarChart(data, containerId) {
+  if (!data || data.length === 0) return;
+
+  // 1. Find min/max of time and price
+  let minTime = Infinity, maxTime = -Infinity;
+  let minPrice = Infinity, maxPrice = -Infinity;
+
+  data.forEach(d => {
+    const t = parseTimeToMinutes(d.time);
+    if (t < minTime) minTime = t;
+    if (t > maxTime) maxTime = t;
+    if (d.price < minPrice) minPrice = d.price;
+    if (d.price > maxPrice) maxPrice = d.price;
+  });
+
+  // Edge case: if all prices identical, shift maxPrice
+  if (minPrice === maxPrice) {
+    maxPrice += 1;
+  }
+
+  const timeRange = maxTime - minTime;
+  const priceRange = maxPrice - minPrice;
+
+  // 2. Decide how big you want the chart in 3D world
+  // e.g., chart extends 8 units in X, 3 units in Y:
+  const chartWidth = 8;   // total width in X
+  const chartHeight = 3;  // total height in Y
+
+  // 3. Convert each data point to a (x, y) position plus bar height
+  const barData = data.map((d, i) => {
+    const t = parseTimeToMinutes(d.time);
+
+    // normalizing time [0..1]
+    const timeNorm = (t - minTime) / timeRange;  // 0..1
+    // map to [0..chartWidth]
+    const xPos = timeNorm * chartWidth;
+
+    // normalizing price [0..1]
+    const priceNorm = (d.price - minPrice) / priceRange; // 0..1
+    // map to [0..chartHeight]
+    const barHeight = priceNorm * chartHeight;
+
+    return { xPos, barHeight, raw: d }; // keep original data for reference
+  });
+
+  // 4. Get container element, clear old bars if any
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn("No container found with ID:", containerId);
+    return;
+  }
+  // Remove existing children if you want a fresh draw
+  Array.from(container.children).forEach(child => container.removeChild(child));
+
+  // 5. Create one <m-cube> per data point
+  //    We'll give it a small width and depth (sx & sz), and its height (sy) 
+  //    is determined by the data. We'll place it so it stands on the "floor" (y=0).
+  barData.forEach((bar, index) => {
+    // Make an <m-cube> element
+    const cubeEl = document.createElement("m-cube");
+
+    // sizing: maybe 0.3 wide, height = bar.barHeight, thickness = 0.3
+    cubeEl.setAttribute("sx", "0.3");
+    cubeEl.setAttribute("sy", bar.barHeight.toString());
+    cubeEl.setAttribute("sz", "0.3");
+
+    // positioning:
+    // x = bar.xPos, y = half of the bar height so it stands on y=0, z = 0
+    // optionally, you can space them out a bit by adding "index * 0.1" in X
+    cubeEl.setAttribute("x", bar.xPos.toString());
+    cubeEl.setAttribute("y", (bar.barHeight / 2).toString());
+    cubeEl.setAttribute("z", "0");
+
+    // color: e.g., green if price above some threshold, red below, or random
+    // here we do a shade of green scaled by the barHeight
+    // barHeight / chartHeight => 0..1 range
+    const greenShade = Math.floor(255 * (bar.barHeight / chartHeight));
+    const color = `rgb(${255 - greenShade}, ${greenShade}, 100)`;
+    cubeEl.setAttribute("color", color);
+
+    // optional: add a tooltip or label
+    // MML might not have a direct "tooltip" concept, so you can 
+    // add an <m-label> or respond to a "click" in 3D.
+
+    // append to container
+    container.appendChild(cubeEl);
+  });
+}
+
+// On load, run draw3DBarChart
+window.addEventListener("DOMContentLoaded", () => {
+  draw3DBarChart(chartData, "chartContainer");
+});
+</script>

@@ -1,0 +1,264 @@
+<!-- 
+  Each m-label is basically a “text panel” in 3D space.
+  Below, we have four labels for our mock trading screen:
+  1) Balances/Equity (headerInfo)
+  2) Watchlist
+  3) Chart (now in ASCII line form)
+  4) Positions
+-->
+
+<m-label
+  id="headerInfo"
+  x="0"
+  y="8"
+  ry="90"
+  font-size="60"
+  width="12"
+  alignment="center"
+  height="2"
+  color="#cccccc"
+  content="Balances and Key Figures"
+></m-label>
+
+<m-label
+  id="watchlist"
+  x="-1"
+  y="4"
+  z="4"
+  ry="90"
+  font-size="50"
+  width="5"
+  alignment="left"
+  height="5"
+  color="#dddddd"
+  content="Watchlist: Loading..."
+></m-label>
+
+<m-label
+  id="chart"
+  x="-1"
+  y="4"
+  z="-4"
+  ry="90"
+  font-size="40"
+  width="8"
+  alignment="center"
+  height="5"
+  color="#ffffff"
+  content="Chart Data: Loading..."
+></m-label>
+
+<m-label
+  id="positions"
+  x="3"
+  y="-2"
+  ry="90"
+  font-size="35"
+  width="8"
+  alignment="left"
+  height="4"
+  color="#dddddd"
+  content="Positions: Loading..."
+></m-label>
+
+<script>
+  // -----------------------------------------------------------
+  // 1. Hardcoded or mock data to simulate fetching from an API
+  // -----------------------------------------------------------
+  const mockTradingData = {
+    balance: 437219.78,
+    equity: 461212.20,
+    pnl: 23992.42,
+    usedMargin: 8976.40,
+    freeMargin: 452235.80,
+    marginLevel: "5138%",
+
+    watchlist: [
+      { symbol: "AAPL", bid: 245.80, ask: 245.81, change: 1.23 },
+      { symbol: "TSLA", bid: 215.30, ask: 215.35, change: -0.57 },
+      { symbol: "AMZN", bid: 101.20, ask: 101.25, change: 0.41 },
+      { symbol: "BTCUSD", bid: 27200.00, ask: 27205.00, change: 2.25 },
+    ],
+
+    // This array holds our time/price data
+    chartData: [
+      { time: "18:30", price: 246.20 },
+      { time: "18:35", price: 246.12 },
+      { time: "18:40", price: 245.95 },
+      { time: "18:45", price: 245.88 },
+      { time: "18:50", price: 246.09 },
+      { time: "18:55", price: 246.50 },
+      { time: "19:00", price: 246.28 },
+      { time: "19:05", price: 246.15 },
+      { time: "19:10", price: 246.20 },
+      { time: "19:15", price: 245.90 },
+    ],
+
+    positions: [
+      {
+        symbol: "BTCUSDTPERP",
+        side: "Buy",
+        size: 0.01,
+        fillPrice: 27066.310,
+        currentPrice: 27070.100,
+        dateTime: "08/24/21 10:21",
+        pnl: 411.14
+      },
+      {
+        symbol: "ETHUSDTPERP",
+        side: "Buy",
+        size: 1.00,
+        fillPrice: 213.910,
+        currentPrice: 219.450,
+        dateTime: "11/13/24 18:23",
+        pnl: 5539.44
+      },
+      // More mock positions...
+    ],
+  };
+
+  // -----------------------------------------------------------
+  // 2. Helper function to format numbers
+  // -----------------------------------------------------------
+  function fmt(n, decimals = 2) {
+    return parseFloat(n).toFixed(decimals);
+  }
+
+  // -----------------------------------------------------------
+  // 3. Build Watchlist Text
+  // -----------------------------------------------------------
+  function buildWatchlist(watchlist) {
+    const lines = watchlist.map(
+      (item) =>
+        `${item.symbol.padEnd(6, ' ')} | Bid: ${fmt(item.bid)} | Ask: ${fmt(item.ask)} | Chg: ${fmt(item.change)}`
+    );
+    return "SYMBOL   | BID    | ASK    | CHG\n" + lines.join("\n");
+  }
+
+  // -----------------------------------------------------------
+  // 4. Build ASCII Line Chart
+  //    This replaces the simpler "buildChartData" function.
+  // -----------------------------------------------------------
+/**
+ * Creates an ASCII chart from the array of data points, plotting each point as "*".
+ * 
+ * @param {Array} data - Array of objects, each { time: string, price: number }
+ * @param {number} chartHeight - Number of text rows in the ASCII grid
+ * @returns {string} Multi-line string representing the ASCII chart
+ */
+ function buildAsciiLineChart(data, chartHeight = 10) {
+  if (!data || data.length === 0) {
+    return "No chart data";
+  }
+
+  // 1. Find min and max prices
+  let minPrice = Infinity;
+  let maxPrice = -Infinity;
+  data.forEach(p => {
+    if (p.price < minPrice) minPrice = p.price;
+    if (p.price > maxPrice) maxPrice = p.price;
+  });
+
+  // Edge case: if all prices are identical, bump max to avoid /0
+  if (maxPrice === minPrice) {
+    maxPrice += 1;
+  }
+
+  // 2. Create a 2D grid (chartHeight rows × data.length columns).
+  // We'll fill each cell with a space " " initially.
+  const rows = new Array(chartHeight)
+    .fill(null)
+    .map(() => new Array(data.length).fill(" "));
+
+  // 3. Calculate the price range
+  const range = maxPrice - minPrice;
+
+  // 4. For each data point, place a "*" in the corresponding row & column.
+  //    row index 0 = TOP row, chartHeight-1 = BOTTOM row
+  data.forEach((point, columnIndex) => {
+    // Normalize price [0..1]
+    const normalized = (point.price - minPrice) / range;
+
+    // Flip the axis so higher prices appear near row 0 (top of the grid):
+    // row 0 is highest price, row (chartHeight-1) is lowest price
+    const rowIndex = chartHeight - 1 - Math.round(normalized * (chartHeight - 1));
+
+    // Place a star in that position
+    rows[rowIndex][columnIndex] = "*";
+  });
+
+  // 5. Convert each row array to a string
+  const asciiLines = rows.map(r => r.join(" "));
+
+  // 6. Add a bottom axis with time labels (optional)
+  // Example: "18:30 18:35 18:40 ..."
+  const timeLabels = data.map(d => d.time).join(" ");
+  asciiLines.push(timeLabels);
+
+  // 7. Construct final multi-line string
+  const asciiChartString = [
+    "ASCII Line Chart (Time vs Price)", 
+    ...asciiLines
+  ].join("\n");
+
+  return asciiChartString;
+}
+
+  // -----------------------------------------------------------
+  // 5. Build Positions Table
+  // -----------------------------------------------------------
+  function buildPositions(positions) {
+    const header = "SYMBOL       | SIDE | SIZE  | FILL PRICE | CURRENT |  PnL ";
+    const lines = positions.map(
+      (pos) =>
+        `${pos.symbol.padEnd(12, ' ')} | ${pos.side}  | ${pos.size}   | ${fmt(pos.fillPrice)}    | ${fmt(pos.currentPrice)}  | ${fmt(pos.pnl)}`
+    );
+    return header + "\n" + lines.join("\n");
+  }
+
+  // -----------------------------------------------------------
+  // 6. Main Display Function
+  //    Called after data is "fetched" (mock or real)
+  // -----------------------------------------------------------
+  function displayTradingScreen(data) {
+    // 6.1. Header (Balances, Equity, etc.)
+    const header = `
+Balance: ${fmt(data.balance)} 
+Equity: ${fmt(data.equity)} 
+PnL: ${fmt(data.pnl)} 
+Used Margin: ${fmt(data.usedMargin)} 
+Free Margin: ${fmt(data.freeMargin)} 
+Margin Level: ${data.marginLevel}
+`.trim();
+
+    document.getElementById("headerInfo").setAttribute("content", header);
+
+    // 6.2. Watchlist
+    const watchlistText = buildWatchlist(data.watchlist);
+    document.getElementById("watchlist").setAttribute("content", watchlistText);
+
+    // 6.3. ASCII Line Chart
+    const asciiChart = buildAsciiLineChart(data.chartData);
+    document.getElementById("chart").setAttribute("content", asciiChart);
+
+    // 6.4. Positions
+    const positionsText = buildPositions(data.positions);
+    document.getElementById("positions").setAttribute("content", positionsText);
+  }
+
+  // -----------------------------------------------------------
+  // 7. Simulated "Fetch" of Data
+  // -----------------------------------------------------------
+  function fetchMockTradingData() {
+    // For demonstration, we just call displayTradingScreen with mock data
+    displayTradingScreen(mockTradingData);
+  }
+
+  // -----------------------------------------------------------
+  // 8. Initialize & Optional Refresh
+  // -----------------------------------------------------------
+  fetchMockTradingData();
+
+  // Refresh every 5 minutes (optional)
+  setInterval(() => fetchMockTradingData(), 5 * 60 * 1000);
+</script>

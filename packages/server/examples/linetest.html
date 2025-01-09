@@ -1,0 +1,189 @@
+<!-- 
+  Your other MML labels/panels would go here (headerInfo, watchlist, etc.) 
+  We'll just show the chart container:
+-->
+
+<m-group
+  id="chartContainer"
+  x="0" 
+  y="2"
+  z="4"
+  ry="90"
+  sx="2"
+  sy="2"
+  sz="2"
+>
+  <!-- We’ll dynamically append <m-cube> elements for line segments & data points here -->
+</m-group>
+
+<script>
+// -----------------------------------------------------------
+// 1) LINE CHART DRAWING LOGIC (reuse from earlier snippet)
+// -----------------------------------------------------------
+function drawLineChartWithCubes(data, containerId) {
+  if (!data || data.length < 2) {
+    console.warn("Not enough data points for a line.");
+    return;
+  }
+
+  // A) Find min/max time & price
+  let minTime = Infinity, maxTime = -Infinity;
+  let minPrice = Infinity, maxPrice = -Infinity;
+
+  data.forEach(d => {
+    // Convert "HH:MM" to a pseudo numeric scale or use a real timeInMinutes if you prefer
+    // But since we already have times in ascending order, we can also do an index-based approach.
+    // For clarity, let’s do a simple "index as time" approach:
+    if (d.index < minTime) minTime = d.index;
+    if (d.index > maxTime) maxTime = d.index;
+    if (d.price < minPrice) minPrice = d.price;
+    if (d.price > maxPrice) maxPrice = d.price;
+  });
+
+  if (minPrice === maxPrice) {
+    maxPrice = minPrice + 1; // to avoid zero range
+  }
+
+  const timeRange = maxTime - minTime;
+  const priceRange = maxPrice - minPrice;
+
+  // B) Choose the chart size in MML units
+  const chartWidth = 5;
+  const chartHeight = 2;
+
+  // C) Get container <m-group>, clear old children
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn("No container found:", containerId);
+    return;
+  }
+  Array.from(container.children).forEach(child => container.removeChild(child));
+
+  // D) Helper to create a thin cube "line"
+  function createCubeLine(x1, y1, x2, y2) {
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.sqrt(dx*dx + dy*dy);
+
+    // angle from vertical (because the cube is aligned along local Y):
+    const angleRad = Math.atan2(dx, dy);
+    const angleDeg = angleRad * (180 / Math.PI) * -1;
+
+    const c = document.createElement("m-cube");
+    c.setAttribute("sx", "0.02");
+    c.setAttribute("sy", length.toString());
+    c.setAttribute("sz", "0.02");
+    c.setAttribute("x", mx.toString());
+    c.setAttribute("y", my.toString());
+    c.setAttribute("z", "0");
+    c.setAttribute("rz", angleDeg.toString());
+    c.setAttribute("color", "#00FF00");
+    return c;
+  }
+
+  // E) Small cube to mark each data point
+  function createPointCube(x, y) {
+    const dot = document.createElement("m-cube");
+    dot.setAttribute("sx", "0.05");
+    dot.setAttribute("sy", "0.05");
+    dot.setAttribute("sz", "0.05");
+    dot.setAttribute("x", x.toString());
+    dot.setAttribute("y", y.toString());
+    dot.setAttribute("z", "0");
+    dot.setAttribute("color", "#FFFF00");
+    return dot;
+  }
+
+  // F) Build actual cubes from consecutive points
+  for (let i = 0; i < data.length - 1; i++) {
+    const p1 = data[i];
+    const p2 = data[i + 1];
+
+    // Map index & price to [0..chartWidth], [0..chartHeight]
+    const x1 = ((p1.index - minTime) / timeRange) * chartWidth;
+    const y1 = ((p1.price - minPrice) / priceRange) * chartHeight;
+    const x2 = ((p2.index - minTime) / timeRange) * chartWidth;
+    const y2 = ((p2.price - minPrice) / priceRange) * chartHeight;
+
+    const lineCube = createCubeLine(x1, y1, x2, y2);
+    container.appendChild(lineCube);
+  }
+
+  // G) Place a dot at each point
+  data.forEach(dp => {
+    const x = ((dp.index - minTime) / timeRange) * chartWidth;
+    const y = ((dp.price - minPrice) / priceRange) * chartHeight;
+    const dot = createPointCube(x, y);
+    container.appendChild(dot);
+  });
+}
+
+// -----------------------------------------------------------
+// 2) FETCH DATA FROM BINANCE (BTCUSDT, 1h, last 10 klines)
+// -----------------------------------------------------------
+async function fetchBinanceKlines() {
+  // Official endpoint for candlestick data
+  const url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1s&limit=100";
+  const response = await fetch(url);
+  const klines = await response.json(); 
+  console.log(klines);
+  // `klines` is an array of arrays:
+  // e.g. [ 
+  //   [
+  //     1591258320000 (open time),
+  //     "9800.00"      (open),
+  //     "9900.00"      (high),
+  //     "9700.00"      (low),
+  //     "9850.00"      (close),
+  //     "123.456"      (volume),
+  //     1591258379999  (close time),
+  //     "..." etc...
+  //   ], ...
+  // ]
+
+  // We only need (time, close price). We'll build an array of objects:
+  // Also, we’ll store "index" to keep track of the sequence from 0..9.
+  const chartData = klines.map((kline, idx) => {
+    const openTimeMs = kline[0];  // open time
+    const closePrice = parseFloat(kline[4]); 
+    console.log(openTimeMs, closePrice);
+
+    // We can format the time as HH:MM, or store the ms and parse it further
+    const dateObj = new Date(openTimeMs);
+
+    // e.g. "18:00" or "01:00"
+    const hh = String(dateObj.getHours()).padStart(2, "0");
+    const mm = String(dateObj.getMinutes()).padStart(2, "0");
+    const timeStr = `${hh}:${mm}`;
+
+    return {
+      index: idx,       // used for charting horizontally
+      time: timeStr,    // for display if needed
+      price: closePrice
+    };
+  });
+
+  return chartData;
+}
+
+// -----------------------------------------------------------
+// 3) INIT & UPDATE CHART
+// -----------------------------------------------------------
+async function updateChart() {
+  try {
+    const data = await fetchBinanceKlines();
+    drawLineChartWithCubes(data, "chartContainer");
+  } catch (err) {
+    console.error("Error fetching Binance data:", err);
+  }
+}
+
+// On DOM load, fetch data and draw
+window.addEventListener("DOMContentLoaded", () => {
+  updateChart();
+  // Optionally, refresh every minute or so for "live" data
+  setInterval(() => updateChart(), 60 * 1000);
+});
+</script>

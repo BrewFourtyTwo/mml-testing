@@ -39,14 +39,14 @@ const DEMO_SLOTS = [
   {
     x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
     z: SLOT_DEPTH + SPACE_BETWEEN_SLOTS,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/dice.html`,
+    documentUrl: `${(window as any).params.wsProtocol}:///examples/linetest.html`,
     title: "Interactive Dice",
   },
   {
     x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
     z: (SLOT_DEPTH + SPACE_BETWEEN_SLOTS) * 2,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/videoplayer.html`,
-    title: "Video Player",
+    documentUrl: `${(window as any).params.wsProtocol}:///examples/3dtrade.html`,
+    title: "Trade",
   },
   {
     x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
