@@ -4,8 +4,17 @@
     "outDir": "./dist",
     "target": "ES2020",
     "jsx": "react-jsx",
-    "lib": ["esnext", "dom", "dom.iterable"],
-    "types": ["react", "react-dom", "node", "@mml-io/mml-react-types"],
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ],
+    "types": [
+      "react",
+      "react-dom",
+      "node",
+      "@mml-io/mml-react-types"
+    ],
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
@@ -20,10 +29,17 @@
     "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
-      "tests/*": ["tests/*"]
+      "tests/*": [
+        "tests/*"
+      ]
     },
     "skipLibCheck": true
   },
-  "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts*"]
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "./src/**/*.ts*",
+    "../web-client/src/MetaMaskAuth.ts"
+  ]
 }

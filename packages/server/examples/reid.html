@@ -1,0 +1,118 @@
+<!-- Exchange Area -->
+<m-group>
+    <!-- Trading Hub -->
+    <m-group>
+      <!-- Base -->
+      <m-cylinder x="0" y="0" z="0" radius="4" height="0.5" color="#444444"></m-cylinder>
+  
+      <!-- Monitors/Desks -->
+      <m-cylinder x="0" y="1" z="0" radius="5" height="0.2" segments="12" color="#FDF906FF"></m-cylinder>
+      <m-cube x="4" y="1.2" z="0" width="0.5" height="1" depth="0.5" color="#C01313FF"></m-cube>
+      <m-cube x="-4" y="1.2" z="0" width="0.5" height="1" depth="0.5" color="#555555"></m-cube>
+      <m-cube x="0" y="1.2" z="4" width="0.5" height="1" depth="0.5" color="#555555"></m-cube>
+      <m-cube x="0" y="1.2" z="-4" width="0.5" height="1" depth="0.5" color="#555555"></m-cube>
+    </m-group>
+  
+    <!-- Walls -->
+    <m-group color="#C21212FF">
+      <!-- Back Wall -->
+      <m-cube x="-10" z="-15" y="1" width="10" height="4" depth="1"></m-cube> <!-- Left Segment -->
+      <m-cube x="10" z="-15" y="1" width="10" height="4" depth="1"></m-cube> <!-- Right Segment -->
+  
+      <!-- Front Wall -->
+      <m-cube x="-10" z="15" y="1" width="10" height="4" depth="1"></m-cube> <!-- Left Segment -->
+      <m-cube x="10" z="15" y="1" width="10" height="4" depth="1"></m-cube> <!-- Right Segment -->
+  
+      <!-- Left Wall -->
+      <m-cube x="-15" z="-10" y="1" width="1" height="4" depth="10"></m-cube> <!-- Top Segment -->
+      <m-cube x="-15" z="10" y="1" width="1" height="4" depth="10"></m-cube> <!-- Bottom Segment -->
+  
+      <!-- Right Wall -->
+      <m-cube x="15" z="-10" y="1" width="1" height="4" depth="10"></m-cube> <!-- Top Segment -->
+      <m-cube x="15" z="10" y="1" width="1" height="4" depth="10"></m-cube> <!-- Bottom Segment -->
+    </m-group>
+  
+    <!-- Chart Display Platforms -->
+    <m-group>
+      <!-- Back-Left Platform -->
+      <m-cube x="-12" z="-12" y="0.5" width="5" height="1" depth="5" color="blue">
+        <m-label
+          id="wallet-address-label"
+          content="Connecting..."
+          font-size="40"
+          alignment="center"
+          y="2"
+          ry="90"
+          width="8"
+          height="1"
+          padding="1"
+        ></m-label>
+      </m-cube>
+  
+      <!-- Back-Right Platform -->
+      <m-cube x="12" z="-12" y="0.5" width="5" height="0.5" depth="5" color="#333333"></m-cube>
+  
+      <!-- Front-Left Platform -->
+      <m-cube x="-12" z="12" y="0.5" width="5" height="0.5" depth="5" color="#333333"></m-cube>
+  
+      <!-- Front-Right Platform -->
+      <m-cube x="12" z="12" y="0.5" width="5" height="0.5" depth="5" color="#333333"></m-cube>
+    </m-group>
+  
+  </m-group>
+
+  <m-group id="label-group"></m-group>
+
+<script>
+  const labelGroup = document.querySelector("#label-group")
+
+  window.addEventListener("connected", (e) => {
+    const newLabel = document.createElement("m-label")
+
+    newLabel.setAttribute("id", `#client-${e.detail.connectionId}`)
+    newLabel.setAttribute("y", "5")
+    newLabel.setAttribute("width", "10")
+    newLabel.setAttribute("height", "4")
+    newLabel.setAttribute("color", "red")
+    newLabel.setAttribute("font-size", "300")
+    newLabel.setAttribute("alignment", "center")
+    newLabel.setAttribute("visible-to", e.detail.connectionId)
+    newLabel.setAttribute("content", e.detail.connectionId)
+
+    labelGroup.appendChild(newLabel)
+  })
+
+  window.addEventListener("disconnected", (e) => {
+    const label = document.querySelector(`#client-${e.detail.connectionId}`)
+
+    labelGroup.removeChild(label)
+  })
+</script>
+
+
+<script>
+  const walletLabel = document.getElementById('wallet-address-label');
+  const connectedUsers = new Map();
+  
+  function formatAddress(address) {
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
+
+  // Listen for user profile updates
+  window.addEventListener("user_profile", (event) => {
+    const { connectionId, profile } = event.detail;
+    connectedUsers.set(connectionId, profile);
+    
+    if (profile.userMetadata && profile.userMetadata.walletAddress) {
+      walletLabel.setAttribute('content', 
+        formatAddress(profile.userMetadata.walletAddress)
+      );
+    }
+  });
+
+  // Listen for disconnections
+  window.addEventListener("disconnected", (event) => {
+    const { connectionId } = event.detail;
+    connectedUsers.delete(connectionId);
+  });
+</script>

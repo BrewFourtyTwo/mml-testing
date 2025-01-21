@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import url from "url";
+import { ethers } from "ethers";
 
 import { Networked3dWebExperienceServer } from "@mml-io/3d-web-experience-server";
 import { CharacterDescription } from "@mml-io/3d-web-user-networking";
@@ -84,6 +85,36 @@ const networked3dWebExperienceServer = new Networked3dWebExperienceServer({
   },
 });
 networked3dWebExperienceServer.registerExpressRoutes(app);
+
+// Add this before the app.listen call
+app.post("/auth/wallet", express.json(), async (req, res) => {
+  const { sessionToken, walletAddress, signature } = req.body;
+
+  if (!sessionToken || !walletAddress || !signature) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // Verify the signature
+    const message = "Sign this message to authenticate with our application";
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+
+    if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+      return res.status(401).json({ error: "Invalid signature" });
+    }
+
+    // Update the user's wallet address
+    const success = userAuthenticator.updateUserWalletAddress(sessionToken, walletAddress);
+    if (!success) {
+      return res.status(404).json({ error: "User session not found" });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error processing wallet authentication:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // Start listening
 console.log("Listening on port", PORT);

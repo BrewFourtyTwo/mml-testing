@@ -96,6 +96,20 @@ function drawLineChartWithCubes(data, containerId) {
     return dot;
   }
 
+  function createLabel(x, y, content) {
+    const label = document.createElement("m-label");
+    label.setAttribute("content", content);
+    label.setAttribute("font-size", "24");
+    label.setAttribute("alignment", "center");
+    label.setAttribute("width", "1.25");
+    label.setAttribute("height", "0.35");
+    label.setAttribute("padding", "1");
+    label.setAttribute("x", "2.25");
+    label.setAttribute("y", "2.5");
+    label.setAttribute("z", "0");
+    return label;
+  }
+
   // F) Build actual cubes from consecutive points
   for (let i = 0; i < data.length - 1; i++) {
     const p1 = data[i];
@@ -118,6 +132,11 @@ function drawLineChartWithCubes(data, containerId) {
     const dot = createPointCube(x, y);
     container.appendChild(dot);
   });
+
+  // H) Add a label to the top left of the chart
+  const label = createLabel(0, 0, `$${data[data.length - 1].price}`);
+  container.appendChild(label);
+
 }
 
 // -----------------------------------------------------------
@@ -128,7 +147,7 @@ async function fetchBinanceKlines() {
   const url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1s&limit=100";
   const response = await fetch(url);
   const klines = await response.json(); 
-  console.log(klines);
+  //console.log(klines);
   // `klines` is an array of arrays:
   // e.g. [ 
   //   [
@@ -148,7 +167,7 @@ async function fetchBinanceKlines() {
   const chartData = klines.map((kline, idx) => {
     const openTimeMs = kline[0];  // open time
     const closePrice = parseFloat(kline[4]); 
-    console.log(openTimeMs, closePrice);
+    //console.log(openTimeMs, closePrice);
 
     // We can format the time as HH:MM, or store the ms and parse it further
     const dateObj = new Date(openTimeMs);
@@ -184,6 +203,6 @@ async function updateChart() {
 window.addEventListener("DOMContentLoaded", () => {
   updateChart();
   // Optionally, refresh every minute or so for "live" data
-  setInterval(() => updateChart(), 60 * 1000);
+  setInterval(() => updateChart(), 1 * 1000);
 });
 </script>

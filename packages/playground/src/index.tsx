@@ -13,52 +13,16 @@ import { Slot } from "./Slot";
 
 const DEMO_SLOTS = [
   {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -2,
+    x: 0,
     z: 0,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/collision-events.html`,
-    title: "Collision Events Demo",
+    documentUrl: `${(window as any).params.wsProtocol}:///examples/reid.html`,
+    title: "Reid Demo",
   },
   {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -2,
-    z: SPACE_BETWEEN_SLOTS + SLOT_DEPTH,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/position-probe.html`,
-    title: "m-position-probe Demo",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -2,
-    z: (SPACE_BETWEEN_SLOTS + SLOT_DEPTH) * 2,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/moving-platform.html`,
-    title: "Moving Platform Demo",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
+    x: 0,
     z: 0,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/duck.html`,
-    title: "Spinning Duck",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
-    z: SLOT_DEPTH + SPACE_BETWEEN_SLOTS,
     documentUrl: `${(window as any).params.wsProtocol}:///examples/linetest.html`,
-    title: "Interactive Dice",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
-    z: (SLOT_DEPTH + SPACE_BETWEEN_SLOTS) * 2,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/3dtrade.html`,
-    title: "Trade",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
-    z: (SLOT_DEPTH + SPACE_BETWEEN_SLOTS) * 3,
-    documentUrl: `${(window as any).params.wsProtocol}:///examples/weather.html`,
-    title: "Weather API",
-  },
-  {
-    x: (SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * -1,
-    z: (SLOT_DEPTH + SPACE_BETWEEN_SLOTS) * 4,
-    documentUrl: `/assets/static-mml.html`,
-    title: "Static MML",
+    title: "Line Test",
   },
 ];
 
@@ -73,25 +37,18 @@ function App() {
   }
   return (
     <>
-      {DEMO_SLOTS.map((slot, index) => {
-        return (
-          <Slot
-            key={"demo-" + index}
-            x={slot.x}
-            z={slot.z}
-            demo={{ url: slot.documentUrl, title: slot.title }}
-          />
-        );
-      })}
-      {slotCoordinates.map(([x, z], index) => {
-        return (
-          <Slot
-            key={index}
-            x={(SLOT_WIDTH + SPACE_BETWEEN_SLOTS) * x}
-            z={(SLOT_DEPTH + SPACE_BETWEEN_SLOTS) * z}
-          />
-        );
-      })}
+      <Slot
+        key={"demo-0"}
+        x={0}
+        z={0}
+        demo={{ url: DEMO_SLOTS[0].documentUrl, title: DEMO_SLOTS[0].title }}
+      />
+      <Slot
+        key={"demo-1"}
+        x={0}
+        z={0}
+        demo={{ url: DEMO_SLOTS[1].documentUrl, title: DEMO_SLOTS[1].title }}
+      />
     </>
   );
 }
