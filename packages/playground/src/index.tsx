@@ -19,6 +19,12 @@ const DEMO_SLOTS = [
     title: "Reid Demo",
   },
   {
+    x: 25,
+    z: 25,
+    documentUrl: `${(window as any).params.wsProtocol}:///examples/duck.html`,
+    title: "Duck Demo",
+  },
+  {
     x: 0,
     z: 0,
     documentUrl: `${(window as any).params.wsProtocol}:///examples/linetest.html`,
@@ -39,14 +45,14 @@ function App() {
     <>
       <Slot
         key={"demo-0"}
-        x={0}
-        z={0}
+        x={DEMO_SLOTS[0].x}
+        z={DEMO_SLOTS[0].z}
         demo={{ url: DEMO_SLOTS[0].documentUrl, title: DEMO_SLOTS[0].title }}
       />
       <Slot
         key={"demo-1"}
-        x={0}
-        z={0}
+        x={DEMO_SLOTS[1].x}
+        z={DEMO_SLOTS[1].z}
         demo={{ url: DEMO_SLOTS[1].documentUrl, title: DEMO_SLOTS[1].title }}
       />
     </>

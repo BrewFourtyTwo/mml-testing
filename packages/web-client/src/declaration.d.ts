@@ -18,6 +18,16 @@ declare module "*.glb" {
   export default filePath;
 }
 
+declare module "*.fbx" {
+  const filePath: string;
+  export default filePath;
+}
+
+declare module "*.obj" {
+  const filePath: string;
+  export default filePath;
+}
+
 declare module "*.hdr" {
   const filePath: string;
   export default filePath;

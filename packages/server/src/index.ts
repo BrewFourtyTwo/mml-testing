@@ -25,12 +25,12 @@ const examplesWatchPath = path.resolve(path.join(dirname, "../examples"), "*.htm
 // Specify the avatar to use here:
 const characterDescription: CharacterDescription = {
   // Option 1 (Default) - Use a GLB file directly
-  meshFileUrl: "/assets/models/bot.glb", // This is just an address of a GLB file
+  meshFileUrl: "/assets/models/run_genshin3.glb", // This is just an address of a GLB file
   // Option 2 - Use an MML Character from a URL
   // mmlCharacterUrl: "https://...",
   // Option 3 - Use an MML Character from a string
   // mmlCharacterString: `
-  // <m-character src="/assets/models/bot.glb">
+  // <m-character src="/assets/models/Aether2.glb">
   //   <m-model src="/assets/models/hat.glb"
   //     socket="head"
   //     x="0.03" y="0" z="0.0"
