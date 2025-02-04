@@ -12,6 +12,7 @@ async function initializeClient() {
   const app = new Networked3dWebExperienceClient(holder, {
     sessionToken: (window as any).SESSION_TOKEN,
     userNetworkAddress,
+    voiceChatAddress: "ws://localhost:8080/voice-chat",
     chatNetworkAddress,
     animationConfig: {
       airAnimationFileUrl: "./assets/models/genshinjump.glb",

@@ -154,7 +154,7 @@ export function Slot(props: { x: number; z: number; demo?: { url: string; title:
             <m-cube
               width={SLOT_WIDTH - SLOT_BORDER_THICKNESS * 2}
               depth={SLOT_DEPTH - SLOT_BORDER_THICKNESS * 2}
-              height="0.21"
+              height="0.251"
               color={SLOT_EMPTY_COLOR}
             ></m-cube>
           </m-prompt>
